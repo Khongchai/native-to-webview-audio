@@ -126,7 +126,11 @@ The protocol can be easily extended (I think...). For example, it currently supp
      MT->>PW: response:nextChunk (chunks, chunkIndex)
 ```
 
-## Further Documentation
+# Limitations
 
-For a more detailed specification of the Native-Worklet Protocol, including API descriptions, data formats, error handling, and performance considerations, please refer to our [detailed specification document](link-to-detailed-spec.md).
+## String Serialization
+
+The main communication method between a sandboxed webview and native environment is still string serialization. This can be very slow if your chunk is large and will require proper tuning to make sure that the serialization does not block any threads for too long. 
+
+This also means that the multitracking capability is rather limited. Having 100 tracks for example is going to cause some noticeable stutters due to serializations.
 
