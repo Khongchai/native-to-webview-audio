@@ -8,6 +8,13 @@ The main idea here is the webview's ability to request chunks when needed. With 
 
 An example implementation in TypeScript (only the audio worklet part) can be viewed in the `playback-worklet` folder at the root of this directory.
 
+## Typical Use Cases
+
+- I need a time-stretching vocoder but using web audio's playbackRate is not ideal because it affects the pitch.
+- I need a cross-platform multi-tracking playback with one codebase.
+- I need a cross-platform playback engine that can handle dynamic source and/or configurations.
+- etc. Ask AI, I think it should be able to provide you with some more use cases
+
 _Note: This protocol requires that you keep the worklet node alive._
 
 ## Overview
