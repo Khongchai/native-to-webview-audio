@@ -220,6 +220,15 @@ class PlaybackWorklet extends AudioWorkletProcessor<"playback"> {
       type: "request:nextChunk",
       chunkIndex: this._pendingChunk,
     });
+
+    // Set a timeout to handle potential network issues
+    setTimeout(() => {
+      if (this._pendingChunk === this._currentChunk + 1) {
+        console.warn(`Chunk request timeout for chunk ${this._pendingChunk}`);
+        this._pendingChunk = null;
+        this._maybeRequestMore(true);
+      }
+    }, 5000); // 5 second timeout, adjust as needed
   }
 
   private _singleInputCopy(
