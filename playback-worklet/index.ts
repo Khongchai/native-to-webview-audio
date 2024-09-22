@@ -7,14 +7,26 @@ import {
   WEB_AUDIO_BLOCK_SIZE,
 } from "./config";
 import { Lock } from "./Lock";
-import { MainThreadToPlaybackEvents } from "./protocol.type";
+import type {
+  MainThreadToPlaybackEvents,
+  PlaybackWorkletPort,
+} from "./protocol.type";
 import { utils } from "./utils";
 
-/**
- * A playback worklet. Some improved playback-related ideas and flow control from the vocoderworklet.
- *
- * For now just used for playing back the recording.
- */
+type AudioWorkletProcessorType = "playback";
+
+declare global {
+  class AudioWorkletProcessor<T extends AudioWorkletProcessorType> {
+    port: T extends "playback" ? PlaybackWorkletPort : unknown;
+    process(inputs: Float32Array[][], outputs: Float32Array[][]): boolean;
+  }
+
+  function registerProcessor<T extends AudioWorkletProcessorType>(
+    name: T,
+    processorCtor: new () => AudioWorkletProcessor<T>
+  ): void;
+}
+
 class PlaybackWorklet extends AudioWorkletProcessor<"playback"> {
   // This can be lazily loaded with dynamic configurations via `request:prepare` if needed.
   private _buffer: CircularBuffer = new CircularBuffer({
@@ -62,12 +74,18 @@ class PlaybackWorklet extends AudioWorkletProcessor<"playback"> {
 
       case "request:play": {
         this._isPaused = false;
+        this.port.postMessage({
+          type: "response:played",
+        });
         return;
       }
 
       case "request:prepare": {
         this._isClosed = false;
         this._duration = e.data.duration;
+        this.port.postMessage({
+          type: "response:prepared",
+        });
         return;
       }
 
@@ -96,6 +114,9 @@ class PlaybackWorklet extends AudioWorkletProcessor<"playback"> {
         this._currentSecond = 0;
         this._pendingChunk = 0;
         this._buffer.clear();
+        this.port.postMessage({
+          type: "response:stopped",
+        });
         return;
       }
 
@@ -109,12 +130,13 @@ class PlaybackWorklet extends AudioWorkletProcessor<"playback"> {
         this._pendingChunk = null;
         this._currentChunk = e.data.chunkIndex;
 
-        // assume only one input
+        // assume only one input for now.
         const firstInput = e.data.chunks[0];
+
         this._buffer.receive(firstInput);
 
         if (this._seekLock.isLocked) {
-          this._seekLock.attemptUnlock();
+          this._seekLock.unlock();
           if (!this._seekLock.isLocked) {
             console.info("Seeking done.");
           }
@@ -141,6 +163,8 @@ class PlaybackWorklet extends AudioWorkletProcessor<"playback"> {
 
     const peeked = this._buffer.peek(this._currentFrame);
 
+    // You can build on top of this and perform any processing here.
+    // This example just copies the input to the output, using this as a simple audio out.
     this._singleInputCopy(peeked, outputs[0]);
 
     this._forwardPosition();
@@ -157,8 +181,9 @@ class PlaybackWorklet extends AudioWorkletProcessor<"playback"> {
   }
 
   private _forwardPosition() {
+    this._currentFrame++;
     this._currentSecond = utils.frameToSecond(
-      ++this._currentFrame,
+      this._currentFrame,
       SAMPLE_RATE,
       WEB_AUDIO_BLOCK_SIZE
     );

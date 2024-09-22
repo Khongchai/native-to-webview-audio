@@ -40,7 +40,6 @@ export class CircularBuffer {
     this._hopSize = hopSize;
     this._channelCount = channelCount;
 
-    // Transform chunk count into smaller hops count (called bucket)
     this._bucketsCount = this._chunkSize * circularBufferSizeInChunks;
     const buildBucket = () => {
       return Array.from(
@@ -51,9 +50,6 @@ export class CircularBuffer {
     this._buffer = Array.from({ length: channelCount }, buildBucket.bind(this));
   }
 
-  /**
-   * @returns Bucket data of `hopSize` for each existing channel.
-   */
   public peek(setHop: number): Float32Array[] {
     const readPos = this._hopToPositionPointer(setHop);
     return this._buffer.map((b) => b[readPos]);

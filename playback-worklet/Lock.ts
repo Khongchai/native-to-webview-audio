@@ -1,38 +1,22 @@
 export class Lock {
-  private _lock: boolean;
-  private _turnCount: number;
-  private _turn: number;
+  private _locked: boolean;
 
   public constructor(turnCount: number) {
     if (turnCount === 0) {
       throw new Error("Pal, what do you mean by lock size of 0 ?!");
     }
-    this._lock = false;
-    this._turnCount = turnCount;
-    this._turn = 0;
+    this._locked = false;
   }
 
   public lock() {
-    this._lock = true;
-    this._turn = 0;
+    this._locked = true;
   }
 
   public get isLocked() {
-    return this._lock;
+    return this._locked;
   }
 
-  public attemptUnlock() {
-    if (!this._lock) {
-      return;
-    }
-    this._turn++;
-    console.debug(
-      `Attempt count: ${this._turn}, total turnkeys: ${this._turnCount}`
-    );
-    if (this._turn >= this._turnCount) {
-      this._lock = false;
-      this._turn = 0;
-      console.debug("Unlocked!");
-    }
+  public unlock() {
+    this._locked = false;
   }
 }
