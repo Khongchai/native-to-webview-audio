@@ -122,3 +122,7 @@ The protocol can be easily extended (I think...). For example, it currently supp
      MT->>PW: response:nextChunk (chunks, chunkIndex)
 ```
 
+## Further Documentation
+
+For a more detailed specification of the Native-Worklet Protocol, including API descriptions, data formats, error handling, and performance considerations, please refer to our [detailed specification document](link-to-detailed-spec.md).
+
