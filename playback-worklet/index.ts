@@ -36,7 +36,7 @@ class PlaybackWorklet extends AudioWorkletProcessor<"playback"> {
     hopSize: WEB_AUDIO_BLOCK_SIZE,
   });
   private _isPaused = true;
-  private _seekLock = new Lock(1);
+  private _seekLock = new Lock();
   private _isClosed = false;
   /**
    * Initial pending chunk is 0 -- the first chunk before any playback is possible.
@@ -59,6 +59,7 @@ class PlaybackWorklet extends AudioWorkletProcessor<"playback"> {
 
     this.port.onmessage = this._handleMessage.bind(this);
 
+    // Immediately request the first chunk.
     this._maybeRequestMore();
   }
 
@@ -204,8 +205,11 @@ class PlaybackWorklet extends AudioWorkletProcessor<"playback"> {
 
   private _maybeRequestMore(forced?: boolean) {
     if (
+      // We can force this to request more chunks if needed. For example, after seeking.
       !forced &&
+      // IF we already have a pending chunk, no need to request again.
       (utils.isNotNullish(this._pendingChunk) ||
+        // If the buffer is not about to overtake the write pointer, no need to request.
         !this._buffer.readAboutToOvertakeWrite(this._currentFrame))
     ) {
       return;

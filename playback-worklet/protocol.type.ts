@@ -21,9 +21,6 @@ export type PlaybackToMainThreadEvents =
     }
   | {
       type: "response:played";
-    }
-  | {
-      type: "response:sought";
     };
 
 export type MainThreadToPlaybackEvents =

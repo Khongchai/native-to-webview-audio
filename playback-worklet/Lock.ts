@@ -1,10 +1,12 @@
+/**
+ * A simple lock implementation.
+ *
+ * This is used to prevent the worklet from processing audio data while seeking.
+ */
 export class Lock {
   private _locked: boolean;
 
-  public constructor(turnCount: number) {
-    if (turnCount === 0) {
-      throw new Error("Pal, what do you mean by lock size of 0 ?!");
-    }
+  public constructor() {
     this._locked = false;
   }
 
