@@ -1,20 +1,20 @@
 # Native-Worklet Protocol
 
-_This is an overview docs, for more detailed one with some examples, please see `playback-worklet/readme.md`_
+_This is an overview document. For a more detailed one with examples, please see `playback-worklet/readme.md`_
 
 This protocol allows cross-platform playback/multitracking by using files located outside the webview sandbox as the streaming source.
 
-The main idea here is the webview's ability to request chunks when it needed. With vanilla web audio API, we're restricted by its playback time and the stream source must be pre-configured.
+The main idea here is the webview's ability to request chunks when needed. With the vanilla Web Audio API, we're restricted by its playback time, and the stream source must be pre-configured.
 
-An example implementation in typescript (only the audio worklet part) can be viewed in the `playback-worklet` folder at the root of this directory.
+An example implementation in TypeScript (only the audio worklet part) can be viewed in the `playback-worklet` folder at the root of this directory.
 
-_Note: this protocol requires that you keepalive the worklet node._
+_Note: This protocol requires that you keep the worklet node alive._
 
 ## Overview
 
-Let's say you're working on a cross-platform app -- be it with react native, MAUI, flutter, and the need arises that you need to playback multiple audio sources simultaneously. Unfortunately if you were to do multi-tracking, you would need to read bytes and combine the audio chunks manually, which is a total chore when you have to do that using native APIs for the `x` platforms you are supporting.
+Let's say you're working on a cross-platform app -- be it with react native, MAUI, flutter, and the need arises that you need to playback multiple audio sources simultaneously, you would need to read bytes and combine the audio chunks manually, which is a total chore when you have to do that using native APIs for the `x` platforms you are supporting.
 
-This protocol defines the core communication flow for play, pause, seek, and stop.
+This protocol defines the core communication flow for play, pause, seek, and stop using the web audio API AudioWorkletProcessor.
 
 ```mermaid
  sequenceDiagram
@@ -50,7 +50,9 @@ This protocol defines the core communication flow for play, pause, seek, and sto
 
 > request:prepare, response:prepared
 
-Prepare must first be called in order to prepare the worklet node for playback. This could be setting up the appropriate listeners and/or sending dynamic configurations for the internal buffering requirements. Whatever it is, this lifecycle is where you set things otherwise not possible via the constructor call up, for example, the duration of the audio.
+Prepare must first be called in order to prepare the worklet node for playback. This could be setting up the appropriate listeners and/or sending dynamic configurations for the internal buffering requirements. 
+
+Whatever it is, this lifecycle is where you set things otherwise not possible via the constructor call up, for example, the duration of the audio.
 
 ### 2. Chunks Request 
 
